@@ -13,5 +13,5 @@ Gem::Specification.new do |s|
 	s.post_install_message = "Thanks for installing the Processmaker gem. For usage examples, check the wiki https://github.com/yamilurbina/processmaker_gem/wiki"
 	
 	s.add_dependency 'savon', '~> 2.1.0'
-	s.add_dependency 'awesome_print', '~> 1.1.0'
+	s.add_dependency 'awesome_print', '~> 1.6.1'
 end
