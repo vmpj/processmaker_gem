@@ -10,7 +10,7 @@ class Processmaker
 	# http://wiki.processmaker.com/index.php/2.0/ProcessMaker_WSDL_Web_Services#login.28.29_Web_Service
 	def self.login(options = {})
 		@client = Savon.client(wsdl: options[:wsdl])
-		response = @client.call( :login, message: { userid: options[:user_id], password: options[:password] })	
+		response = @client.call( :login, message: { userid: options[:user_id], password: options[:password] })  
 		@session_id_token = response.body[:login_response][:message]
 		return response.body[:login_response]
 	end
@@ -252,9 +252,28 @@ class Processmaker
 		return response.body[:route_case_response]
 	end
 
+	# getVariablesNames()
+	# get all variables the system and case selected
+	# http://wiki.processmaker.com/index.php/2.0/ProcessMaker_WSDL_Web_Services#getVariablesNames.28.29
+	def self.get_variables_names(options = {})
+		response = @client.call( :get_variables_names, message: {
+			sessionId: options[:session_id] || @session_id_token,
+			caseId: options[:case_id]
+		})
+		return response.body[:get_variables_names_response][:variables].map { |v| v[:name] }
+	end
 
-=begin
-	This method is not working due to a bug in Processmaker
+	# helper method to get the value of one variable
+	def self.get_variable(name, options = {})
+		response = @client.call( :get_variables, message: {
+			sessionId: options[:session_id] || @session_id_token,
+			caseId: options[:case_id],
+			variables: { name: name }
+		})
+		ap response.body
+		return response.body[:get_variables_response][:variables][:value]
+	end
+
 	# getVariables()
 	# returns variables from a given case
 	# http://wiki.processmaker.com/index.php/2.0/ProcessMaker_WSDL_Web_Services#getVariables.28.29
@@ -262,25 +281,42 @@ class Processmaker
 		response = @client.call( :get_variables, message: {
 			sessionId: options[:session_id] || @session_id_token,
 			caseId: options[:case_id],
-			variables: 'variables'
+			variables: Array(options[:variables]).map do |variable| 
+				{ name: variable }
+			end
 		})
 		ap response.body
-		#return response.body[:route_case_response]
+		return response.body[:get_variables_response][:variables]
+	end
+
+	# helper method to set the value of a single variable
+	def self.send_variable(name, value, options = {})
+		ap options[:variables]
+		response = @client.call( :send_variables, message: {
+			sessionId: options[:session_id] || @session_id_token,
+			caseId: options[:case_id],
+			variables: { name: name, value: value }
+		})
+		ap response.body
+		return response.body[:send_variables_response]
 	end
 
 	# sendVariables()
 	# sends variables to a case
 	# http://wiki.processmaker.com/index.php/2.0/ProcessMaker_WSDL_Web_Services#sendVariables.28.29
 	def self.send_variables(options = {})
+		ap options[:variables]
 		response = @client.call( :send_variables, message: {
 			sessionId: options[:session_id] || @session_id_token,
 			caseId: options[:case_id],
-			variables: 'variables'
+			variables: options[:variables].map do |name, value| 
+				{ name: name.to_s, value: value }
+			end
 		})
 		ap response.body
-		#return response.body[:route_case_response]
+		return response.body[:send_variables_response]
 	end
-=end
+
 
 	# triggerList()
 	# triggerList() returns a list of all the available triggers in a workspace
