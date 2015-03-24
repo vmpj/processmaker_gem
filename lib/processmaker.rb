@@ -266,7 +266,12 @@ class Processmaker
 			sessionId: options[:session_id] || @session_id_token,
 			caseId: options[:case_id]
 		})
-		return response.body[:get_variables_names_response][:variables].map { |v| v[:name] }
+		call_response = response.body[:get_variables_names_response]
+		if call_response.has_key? :variables
+			call_response[:variables].map { |v| v[:name] }
+		else
+			call_response
+		end
 	end
 
 	# helper method to get the value of one variable
