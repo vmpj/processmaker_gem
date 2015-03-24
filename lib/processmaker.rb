@@ -183,7 +183,13 @@ class Processmaker
 		response = @client.call( :unassigned_case_list, message: {
 			sessionId: options[:session_id] || @session_id_token,
 		})
-		return response.body[:unassigned_case_list_response][:cases]
+		call_response = response.body[:unassigned_case_list_response]
+		ap call_response
+		if !call_response.nil? && call_response.has_key?(:cases)
+			call_response[:cases]
+		else
+			[]
+		end
 	end
 
 	# getCaseInfo()
